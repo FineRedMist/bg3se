@@ -1,7 +1,6 @@
 @echo off
 REM Uses the default settings for the Baldur's Gate 3 folder, however, it allows overriding it by 
-REM specifying the folder path in the BG3Folder.txt file in the root of bg3se (the file is in the 
-REM .gitignore list).
+REM specifying the folder path in the BG3Folder.txt file in %LOCALAPPDATA%\BG3 Script Extender\.
 setlocal
 
 SET SRC_FILE=%1
