@@ -115,6 +115,7 @@ END_ENUM()
 
 BEGIN_ENUM(ExtComponentType, uint32_t)
 	E(ActionResources)
+	E(ActionResourceSpendEvent)
 	E(Armor)
 	E(ArmorSetState)
 	E(BaseHp)
@@ -135,15 +136,10 @@ BEGIN_ENUM(ExtComponentType, uint32_t)
 	E(Weapon)
 	E(Wielding)
 	E(CustomStats)
-	E(BoostCondition)
-	E(BoostsContainer)
-	E(ServerBoostBase)
-	E(ServerStatusBoostsProcessed)
 	E(ActionResourceConsumeMultiplierBoost)
 	E(Tag)
 	E(SpellBookPrepares)
 	E(Transform)
-	E(BoostInfo)
 	E(Relation)
 	E(Faction)
 	E(CanInteract)
@@ -168,6 +164,19 @@ BEGIN_ENUM(ExtComponentType, uint32_t)
 	E(HealBlock)
 	E(Ruleset)
 	E(RulesetModifiers)
+	E(TimeFactor)
+
+	// Boosts
+	E(BoostCondition)
+	E(BoostsContainer)
+	E(BoostInfo)
+
+	// Server boosts
+	E(ServerBoostBase)
+	E(ServerStatusBoostsProcessed)
+	E(BoostChangedEvent)
+	E(StatusBoostsRefreshed)
+	E(BoostBaseUpdated)
 
 	// Stats
 	E(ServerBaseData)
@@ -176,6 +185,17 @@ BEGIN_ENUM(ExtComponentType, uint32_t)
 	E(ServerBaseWeapon)
 	E(ServerBaseProficiency)
 	E(ServerProficiencyGroupStats)
+
+	// Stats events
+	E(AbilityCheckEvent)
+	E(EquipmentSlotChangedEvent)
+	E(LevelChanged)
+	E(SavingThrowRolledEvent)
+	E(SkillCheckEvent)
+	E(WeaponPropertiesChangedEvent)
+	E(AttributeFlagsChangedEvent)
+	E(ClassesChangedEvent)
+	E(StatsAppliedEvent)
 
 	// Shapeshift
 	E(ShapeshiftState)
@@ -186,8 +206,10 @@ BEGIN_ENUM(ExtComponentType, uint32_t)
 	E(AnimationWaterfall)
 	E(DynamicAnimationTags)
 	E(TemplateAnimationSetOverride)
+	E(AnimationTextKeyEventsSingleton)
 	E(AnimationGameplayEvents)
 	E(AnimationTextKeyEvents)
+	E(AnimationTriggeredEvents)
 
 	// Passives
 	E(PassiveContainer)
@@ -311,6 +333,12 @@ BEGIN_ENUM(ExtComponentType, uint32_t)
 	E(ServerDeathState)
 	E(ServerDeathContinue)
 
+	E(DeathApplyKnockedOut)
+	E(DeathAssignEntityToUserRequest)
+	E(DeathDeadByDefaultRequest)
+	E(DiedEvent)
+	E(FallToProne)
+
 	// Hit
 	E(HitTarget)
 	E(HitAttacker)
@@ -319,6 +347,11 @@ BEGIN_ENUM(ExtComponentType, uint32_t)
 	E(HitProxy)
 	E(HitProxyOwner)
 	E(HitReaction)
+
+	// Hit events
+	E(HitAnimationRequest)
+	E(HitResultEvent)
+	E(HitJoinCombatRequest)
 
 	// Identity
 	E(Identity)
@@ -331,6 +364,25 @@ BEGIN_ENUM(ExtComponentType, uint32_t)
 	E(ServerEnterRequest)
 	E(ServerFleeBlocked)
 	E(ServerImmediateJoin)
+
+	// Server combat events
+	E(CombatantKilledEvent)
+	E(CombatLeftEvent)
+	E(CombatScheduledForDelete)
+	E(CombatStartedEvent)
+	E(DelayedFanfareRemovedDuringCombatEvent)
+	E(CombatJoinInCurrentRoundFailedEvent)
+	E(CombatJoinInCurrentRound)
+	E(CombatRequestCompletedEvent)
+	E(CombatSurprisedJoinRequest)
+	E(CombatSurprisedStealthRequest)
+	E(CombatThreatRangeChangedEvent)
+
+	// Server FTB events
+	E(FTBModeChangedEvent)
+	E(FTBPlayersTurnEndedEvent)
+	E(FTBPlayersTurnStartedEvent)
+	E(FTBRoundEndedEvent)
 
 	// Ai
 	E(ServerAiInterestedInItems)
@@ -348,6 +400,9 @@ BEGIN_ENUM(ExtComponentType, uint32_t)
 	E(LearnedSpells)
 	E(SpellAiConditions)
 	E(OnDamageSpells)
+	E(NewSpellsAddedEvent)
+	E(SpellsLearnedEvent)
+	E(SpellBookChanged)
 
 	// Spell casting
 	E(SpellCastAnimationInfo)
@@ -389,6 +444,17 @@ BEGIN_ENUM(ExtComponentType, uint32_t)
 	E(ServerSpellCastState)
 	E(ServerSpellCastCache)
 	E(ServerSpellCastInterrupt)
+	E(SpellCastInterruptsUsed)
+	E(SpellCastMoveDuringCastUpdateEvent)
+	E(SpellCastMovementAndPrecalculationEndEvent)
+	E(SpellCastRequestTargetTracking)
+	E(SpellCastUpdateTargetTracking)
+	E(SpellWeaponSetChangeRequest)
+
+	// Concentration events
+	E(ConcentrationChanged)
+	E(ConcentrationDamageCheck)
+	E(ConcentrationClearedEvent)
 
 	// Interrupts
 	E(InterruptActionState)
@@ -409,6 +475,7 @@ BEGIN_ENUM(ExtComponentType, uint32_t)
 	E(ServerInterruptInitialParticipants)
 	E(ServerInterruptTurnOrderInZone)
 	E(ServerInterruptDataSingleton)
+	E(ServerInterruptUsed)
 
 	// Client interrupts
 	E(ClientInterruptPlayerDecision)
@@ -435,6 +502,23 @@ BEGIN_ENUM(ExtComponentType, uint32_t)
 	E(ServerStatusActive)
 	E(ServerStatusAddedFromSaveLoad)
 	E(ServerStatusAura)
+	E(ServerStatusAuraContainer)
+
+	// Status events
+	E(ServerAddedStatusAuraEffectEvent)
+	E(ServerRemovedStatusAuraEffectEvent)
+	E(ServerStatusAddEvent)
+	E(ServerStatusApplyEvent)
+	E(ServerStatusAttemptEvent)
+	E(ServerStatusAttemptFailedEvent)
+	E(ServerStatusDispelRollCheck)
+	E(ServerStatusDownedChangedEvent)
+	E(ServerStatusRefreshed)
+	E(ServerStatusRemoveEvent)
+	E(ServerStatusScheduledForDeletion)
+	E(ServerStatusEvent)
+	E(ServerStatusTurnStartEvent)
+	E(ServerStatusUpdateTargetTracking)
 
 	// Tadpole
 	E(TadpoleTreeState)
@@ -638,11 +722,35 @@ BEGIN_ENUM(ExtComponentType, uint32_t)
 	E(IsMarkedForDeletion)
 	E(JumpFollow)
 
+	// Server events
+	E(ServerTemplateChangedEvent)
+	E(ServerTemplateTransformedEvent)
+	E(TagsChangedEvent)
+
+	// Summons
+	E(SummonCreatedEvent)
+	E(SummonAddConcentrationRequest)
+	E(SummonAddToExistingConcentrationRequest)
+	E(SummonAttachToProjectileRequest)
+	E(SummonOwnerSetEvent)
+	E(SummonPlaceInInventoryRequest)
+	E(SummonSetLifetimeRequest)
+	E(SummonDespawnRequest)
+	E(SummonExpiredRequest)
+	E(SummonLateJoinPenalty)
+
 	// Passives
 	E(ServerToggledPassives)
 	E(ServerPassiveBase)
 	E(ServerPassivePersistentData)
 	E(ServerScriptPassives)
+
+	// Passives events
+	E(PassiveRequestTargetTracking)
+	E(PassiveUpdateTargetTracking)
+	E(PassiveConditionalRollInterruptEvent)
+	E(PassivesUpdatedEvent)
+	E(PasssiveUsageCountIncrementedEvent)
 
 	E(ServerCharacter)
 	E(ServerItem)
@@ -656,6 +764,12 @@ BEGIN_ENUM(ExtComponentType, uint32_t)
 	E(ServerProjectileCache)
 	E(ServerOsirisTag)
 
+	// Projectile events
+	E(ProjectileImpactEvent)
+	E(ProjectileRequestTargetTracking)
+	E(ProjectileUpdateTargetTracking)
+	E(ProjectileSplitThrowableObjectRequest)
+
 	E(ClientCharacter)
 	E(ClientItem)
 	E(ClientProjectile)
@@ -667,6 +781,7 @@ BEGIN_ENUM(ExtComponentType, uint32_t)
 	E(RollModifiers)
 	E(ServerRollInProgress)
 	E(ServerRollStartRequest)
+	E(ServerRollStartSpellRequest)
 
 	// Boost components
 	E(ArmorClassBoost)

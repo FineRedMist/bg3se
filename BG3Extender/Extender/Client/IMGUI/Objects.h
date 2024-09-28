@@ -65,7 +65,8 @@ enum class IMGUIObjectType : uint8_t
     InputInt,
     ColorEdit,
     ColorPicker,
-    Max = ColorPicker
+    ProgressBar,
+    Max = ProgressBar
 };
 
 
@@ -134,6 +135,7 @@ public:
     std::optional<glm::vec4> GetStyleColor(GuiColor color);
     void SetStyleColor(GuiColor color, glm::vec4 value);
     lua::ImguiHandle Tooltip();
+    void Activate();
 
     Array<StyleVar> StyleVars;
     Array<StyleColor> StyleColors;
@@ -141,15 +143,20 @@ public:
     STDString IDContext;
     bool SameLine{ false };
     bool Visible{ true };
+    bool RequestActivate{ false };
+    bool WasHovered{ false };
     FixedString Font;
     std::optional<glm::vec2> PositionOffset;
     std::optional<glm::vec2> AbsolutePosition;
     std::optional<float> ItemWidth;
     std::optional<float> TextWrapPos;
     GuiItemFlags ItemFlags{ 0 };
+    GuiItemStatusFlags StatusFlags{ 0 };
 
     lua::LuaDelegate<void(lua::ImguiHandle)> OnActivate;
     lua::LuaDelegate<void(lua::ImguiHandle)> OnDeactivate;
+    lua::LuaDelegate<void(lua::ImguiHandle)> OnHoverEnter;
+    lua::LuaDelegate<void(lua::ImguiHandle)> OnHoverLeave;
 
 private:
     lua::ImguiHandle tooltip_;
@@ -203,6 +210,8 @@ public:
     lua::ImguiHandle AddInputInt(char const* label, std::optional<int> value);
     lua::ImguiHandle AddColorEdit(char const* label, std::optional<glm::vec3> value);
     lua::ImguiHandle AddColorPicker(char const* label, std::optional<glm::vec3> value);
+
+    lua::ImguiHandle AddProgressBar();
 
     bool RemoveChild(lua::ImguiHandle child);
     bool DetachChild(lua::ImguiHandle child);
@@ -428,6 +437,8 @@ public:
 
     uint32_t Columns{ 1 };
     GuiTableFlags Flags{ 0 };
+    bool ShowHeader{ false };
+    bool AngledHeader{ false };
     Array<ColumnDefinition> ColumnDefs;
     std::optional<glm::vec2> Size;
 
@@ -722,6 +733,8 @@ public:
     glm::vec4 Max{ 1.0f };
     int Components{ 1 };
     GuiSliderFlags Flags{ 0 };
+    bool Vertical{ false };
+    glm::vec2 VerticalSize{ 1.0f };
     lua::LuaDelegate<void (lua::ImguiHandle, glm::vec4)> OnChange;
 };
 
@@ -738,6 +751,8 @@ public:
     glm::ivec4 Max{ 1 };
     int Components{ 1 };
     GuiSliderFlags Flags{ 0 };
+    bool Vertical{ false };
+    glm::vec2 VerticalSize{ 1.0f };
     lua::LuaDelegate<void (lua::ImguiHandle, glm::ivec4)> OnChange;
 };
 
@@ -793,6 +808,19 @@ public:
     glm::vec4 Color{ 0.0f };
     GuiColorEditFlags Flags{ ImGuiColorEditFlags_DefaultOptions_ };
     lua::LuaDelegate<void (lua::ImguiHandle, glm::vec4)> OnChange;
+};
+
+
+struct ProgressBar : public StyledRenderable
+{
+public:
+    DECL_UI_TYPE(ProgressBar)
+
+    void StyledRender() override;
+
+    float Value{ 0.0f };
+    glm::vec2 Size{ 0.0f };
+    STDString Overlay;
 };
 
 

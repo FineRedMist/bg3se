@@ -105,11 +105,12 @@ struct ConditionRoll
 	ConditionRollType RollType;
 	std::variant<StatsRoll, StatsExpressionResolved> Roll;
 	int Difficulty;
-	Guid field_120;
-	bool field_130;
+	Guid RollUuid;
+	bool SwappedSourceAndTarget;
 	AbilityId Ability;
 	SkillId Skill;
 };
+
 
 struct ConditionRolls
 {
@@ -122,7 +123,7 @@ struct DamageModifierMetadata
 	int Value;
 	DamageType DamageType;
 	uint8_t SourceType;
-	[[bg3::legacy(Argument)]] std::variant<RollDefinition, int32_t, StatsExpressionResolved> Source;
+	[[bg3::legacy(Argument)]] std::variant<int32_t, RollDefinition, StatsExpressionResolved> Source;
 	[[bg3::legacy(Description)]] TranslatedString SourceName;
 	[[bg3::legacy(Description2)]] FixedString SourceId;
 };

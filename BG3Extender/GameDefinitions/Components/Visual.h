@@ -133,7 +133,124 @@ struct CharacterCreationAppearanceComponent : public BaseComponent
 	Guid HairColor;
 };
 
+struct AnimationWaterfallElement
+{
+	FixedString Slot;
+	FixedString Resource;
+	FixedString Type;
+};
+
+struct AnimationWaterfallOverride
+{
+	Guid AnimationTag;
+	uint8_t OverrideType;
+	Array<AnimationWaterfallElement> Overrides;
+};
+
+struct AnimationTag
+{
+	Guid Tag;
+	uint8_t field_10;
+};
+
+
+struct AnimationWaterfallComponent : public BaseComponent
+{
+	DEFINE_COMPONENT(AnimationWaterfall, "ls::animation::AnimationWaterfallComponent")
+
+	Array<AnimationWaterfallElement> Waterfall;
+	Array<AnimationWaterfallOverride> Overrides;
+};
+
+struct DynamicAnimationTagsComponent : public BaseComponent
+{
+	DEFINE_COMPONENT(DynamicAnimationTags, "ls::animation::DynamicAnimationTagsComponent")
+
+	Array<AnimationTag> Tags;
+};
+
+struct TemplateAnimationSetOverrideComponent : public BaseComponent
+{
+	DEFINE_COMPONENT(TemplateAnimationSetOverride, "ls::animation::TemplateAnimationSetOverrideComponent")
+
+	Array<AnimationWaterfallElement> Overrides;
+};
+
+
+struct AnimationReceivedGameplayEvent
+{
+	EntityHandle Entity;
+	FixedString Event;
+	[[bg3::hidden]] gn::GenomeParametrizedEventArgs Args;
+};
+
+struct AnimationReceivedTextKeyEvent
+{
+	EntityHandle Entity;
+	TextKeyEvent* Event;
+	[[bg3::hidden]] void* Skeleton;
+};
+
+
 END_SE()
+
+BEGIN_NS(animation)
+
+struct ReceivedEvent
+{
+	FixedString Event;
+	Array<gn::GenomeVariant> Args;
+};
+
+
+struct TextKeyEventValue
+{
+	FixedString field_0;
+	uint8_t field_4;
+};
+
+
+struct TextKeyEventInfo
+{
+	FixedString TextKey;
+	uint8_t field_4;
+	std::optional<TextKeyEventValue> field_8;
+};
+
+
+struct TextKeyEventsSingletonComponent : public BaseComponent
+{
+	DEFINE_COMPONENT(AnimationTextKeyEventsSingleton, "ls::animation::TextKeyEventsSingletonComponent")
+
+	Array<AnimationReceivedTextKeyEvent> Events;
+};
+
+
+struct GameplayEventsOneFrameComponent : public BaseComponent
+{
+	DEFINE_COMPONENT(AnimationGameplayEvents, "eoc::animation::GameplayEventsOneFrameComponent")
+
+	HashMap<EntityHandle, Array<ReceivedEvent>> Events;
+};
+
+
+struct TextKeyEventsOneFrameComponent : public BaseComponent
+{
+	DEFINE_COMPONENT(AnimationTextKeyEvents, "eoc::animation::TextKeyEventsOneFrameComponent")
+
+	HashMap<EntityHandle, Array<TextKeyEventInfo>> Events;
+};
+
+
+struct TriggeredEventsOneFrameComponent : public BaseComponent
+{
+	DEFINE_COMPONENT(AnimationTriggeredEvents, "eoc::animation::TriggeredEventsOneFrameComponent")
+
+	HashMap<EntityHandle, Array<FixedString>> Events;
+};
+
+END_NS()
+
 
 BEGIN_NS(esv)
 

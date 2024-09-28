@@ -169,7 +169,17 @@ void StyledRenderable::Render()
     if (TextWrapPos) ImGui::PushTextWrapPos(*TextWrapPos);
     if (ItemWidth) ImGui::SetNextItemWidth(*ItemWidth);
 
+    if (RequestActivate) {
+        ImGui::ActivateItemByID(ImGui::GetCurrentWindow()->GetID(Label.c_str()));
+        RequestActivate = false;
+    }
+
     StyledRender();
+
+    auto status = (GuiItemStatusFlags)ImGui::GetItemStatusFlags();
+    if (ImGui::IsItemFocused()) status |= GuiItemStatusFlags::Focused;
+    if (ImGui::IsItemActive()) status |= GuiItemStatusFlags::Active;
+    if (StatusFlags != status) StatusFlags = status;
 
     if (ItemFlags != (GuiItemFlags)0) ImGui::PopItemFlag();
     if (TextWrapPos) ImGui::PopTextWrapPos();
@@ -193,12 +203,26 @@ void StyledRenderable::Render()
         ImGui::PopID();
     }
 
-    if (ImGui::IsItemActivated() && OnActivate) {
+    if (OnActivate && ImGui::IsItemActivated()) {
         Manager->GetEventQueue().Call(OnActivate, lua::ImguiHandle(Handle));
     }
 
-    if (ImGui::IsItemDeactivated() && OnDeactivate) {
+    if (OnDeactivate && ImGui::IsItemDeactivated()) {
         Manager->GetEventQueue().Call(OnDeactivate, lua::ImguiHandle(Handle));
+    }
+
+    // IsItemHovered() is expensive so we need to make sure we have a handler before doing a hover check
+    if (OnHoverEnter || OnHoverLeave) {
+        auto hovered = ImGui::IsItemHovered();
+        if (WasHovered != hovered) {
+            if (hovered && OnHoverEnter) {
+                Manager->GetEventQueue().Call(OnHoverEnter, lua::ImguiHandle(Handle));
+            }
+            if (!hovered && OnHoverLeave) {
+                Manager->GetEventQueue().Call(OnHoverLeave, lua::ImguiHandle(Handle));
+            }
+        }
+        WasHovered = hovered;
     }
 }
 
@@ -259,6 +283,11 @@ lua::ImguiHandle StyledRenderable::Tooltip()
 
     tooltip_ = Manager->CreateRenderable<extui::Tooltip>();
     return tooltip_;
+}
+
+void StyledRenderable::Activate()
+{
+    RequestActivate = true;
 }
 
 TreeParent::~TreeParent()
@@ -557,6 +586,13 @@ lua::ImguiHandle TreeParent::AddColorPicker(char const* label, std::optional<glm
     if (value) e->Color = glm::vec4(*value, 1.0f);
     return e;
 }
+
+
+lua::ImguiHandle TreeParent::AddProgressBar()
+{
+    return AddChild<ProgressBar>();
+}
+
 
 bool TreeParent::RemoveChild(lua::ImguiHandle child)
 {
@@ -894,6 +930,9 @@ bool Table::BeginRender()
         }
     }
 
+    if (ShowHeader && AngledHeader) ImGui::TableAngledHeadersRow();
+    if (ShowHeader) ImGui::TableHeadersRow();
+
     return rendering_;
 }
 
@@ -1202,9 +1241,17 @@ void DragInt::StyledRender()
 
 void SliderScalar::StyledRender()
 {
-    if (ImGui::SliderScalarN(Label.c_str(), ImGuiDataType_Float, &Value, Components, &Min, &Max, nullptr, (ImGuiSliderFlags)Flags)) {
-        if (OnChange) {
-            Manager->GetEventQueue().Call(OnChange, lua::ImguiHandle(Handle), Value);
+    if (Vertical) {
+        if (ImGui::VSliderScalar(Label.c_str(), ToImVec(VerticalSize), ImGuiDataType_Float, &Value, &Min, &Max, nullptr, (ImGuiSliderFlags)Flags)) {
+            if (OnChange) {
+                Manager->GetEventQueue().Call(OnChange, lua::ImguiHandle(Handle), Value);
+            }
+        }
+    } else {
+        if (ImGui::SliderScalarN(Label.c_str(), ImGuiDataType_Float, &Value, Components, &Min, &Max, nullptr, (ImGuiSliderFlags)Flags)) {
+            if (OnChange) {
+                Manager->GetEventQueue().Call(OnChange, lua::ImguiHandle(Handle), Value);
+            }
         }
     }
 }
@@ -1212,9 +1259,17 @@ void SliderScalar::StyledRender()
 
 void SliderInt::StyledRender()
 {
-    if (ImGui::SliderScalarN(Label.c_str(), ImGuiDataType_S32, &Value, Components, &Min, &Max, nullptr, (ImGuiSliderFlags)Flags)) {
-        if (OnChange) {
-            Manager->GetEventQueue().Call(OnChange, lua::ImguiHandle(Handle), Value);
+    if (Vertical) {
+        if (ImGui::VSliderInt(Label.c_str(), ToImVec(VerticalSize), &Value.x, Min.x, Max.x, nullptr, (ImGuiSliderFlags)Flags)) {
+            if (OnChange) {
+                Manager->GetEventQueue().Call(OnChange, lua::ImguiHandle(Handle), Value);
+            }
+        }
+    } else {
+        if (ImGui::SliderScalarN(Label.c_str(), ImGuiDataType_S32, &Value, Components, &Min, &Max, nullptr, (ImGuiSliderFlags)Flags)) {
+            if (OnChange) {
+                Manager->GetEventQueue().Call(OnChange, lua::ImguiHandle(Handle), Value);
+            }
         }
     }
 }
@@ -1257,6 +1312,12 @@ void ColorPicker::StyledRender()
             Manager->GetEventQueue().Call(OnChange, lua::ImguiHandle(Handle), Color);
         }
     }
+}
+
+
+void ProgressBar::StyledRender()
+{
+    ImGui::ProgressBar(Value, ToImVec(Size), Overlay.empty() ? nullptr : Overlay.c_str());
 }
 
 
@@ -1308,6 +1369,8 @@ IMGUIObjectManager::IMGUIObjectManager()
 
     pools_[(unsigned)IMGUIObjectType::ColorEdit] = std::make_unique<IMGUIObjectPool<ColorEdit>>();
     pools_[(unsigned)IMGUIObjectType::ColorPicker] = std::make_unique<IMGUIObjectPool<ColorPicker>>();
+
+    pools_[(unsigned)IMGUIObjectType::ProgressBar] = std::make_unique<IMGUIObjectPool<ProgressBar>>();
 }
 
 Renderable* IMGUIObjectManager::CreateRenderable(IMGUIObjectType type)
@@ -1357,7 +1420,10 @@ void IMGUIObjectManager::EnableDemo(bool enable)
 
 void IMGUIObjectManager::ClientUpdate()
 {
-    eventQueue_.Flush();
+    LuaVirtualPin lua(ecl::ExtensionState::Get());
+    if (lua) {
+        eventQueue_.Flush();
+    }
 }
 
 IMGUIManager::IMGUIManager(SDLManager& sdl)
